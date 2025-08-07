@@ -1,19 +1,28 @@
 <?php
 
+use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+Route::get('/users', [UserController::class, 'index']);
+Route::post('/users', [UserController::class, 'store']);
+Route::get('/users/{id}', [UserController::class, 'show']);
+Route::put('/users/{id}', [UserController::class, 'update']);
+Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Endpoint health
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok']);
+});
+
+// Endpoint /external que consome microsserviço Node.js
+Route::get('/external', function () {
+    $response = Http::get('http://localhost:4000/external-data');
+    if ($response->successful()) {
+        return response()->json([
+            'node_response' => $response->json()
+            ], 200, ['Content-Type' => 'application/json; charset=utf-8']);
+    }
+    return response()->json(['error' => 'Failed to get data'], 500);
 });
